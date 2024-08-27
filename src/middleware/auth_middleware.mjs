@@ -1,35 +1,38 @@
 import jwt from "jsonwebtoken";
-import { JWT_KEY } from "../../secret.mjs";
+import { JWT_KEY } from "../../secret.mjs"; // Pastikan JWT_KEY diambil dari variabel lingkungan
 import prisma from "../db/prisma.mjs";
 
-// Middleware to check for Authorization header and verify JWT
+// Middleware untuk memeriksa header Authorization dan memverifikasi JWT
 export const authMiddleware = async (request, response, next) => {
-  const token = request.cookies.auth_token; // Access the Authorization header
-  console.info(request.cookies)
+  // Ambil token dari cookies
+  const token = request.cookies.auth_token;
+  console.info(token)
 
   if (!token) {
-    return response
-      .status(401)
-      .json({ message: "Access denied. No token provided." });
+    return response.status(401).json({ message: "Access denied. No token provided." });
   }
 
   try {
+    // Verifikasi token
     const payload = jwt.verify(token, JWT_KEY);
-    const findUser = await prisma.user.findFirst({
+
+    // Cari pengguna berdasarkan ID dari payload
+    const findUser = await prisma.user.findUnique({
       where: {
         id: payload.id,
       },
     });
 
     if (!findUser) {
-      return response
-        .status(401)
-        .json({ message: "Access denied. User not found." });
+      return response.status(401).json({ message: "Access denied. User not found." });
     }
 
-    request.user = findUser; // Attach user info to the request object
-    next(); // Continue to the next middleware or route handler
+    // Tambahkan informasi pengguna ke objek request
+    request.user = findUser;
+    next(); // Lanjutkan ke middleware berikutnya atau handler route
   } catch (error) {
-    return response.status(400).json({ message: "Invalid token." });
+    // Log error di server (jangan log token di lingkungan produksi)
+    console.error('Token verification error:', error.message);
+    return response.status(401).json({ message: "Invalid token." });
   }
 };
