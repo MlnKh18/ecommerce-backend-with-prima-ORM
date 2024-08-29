@@ -49,7 +49,7 @@ export const loginUser = async (email, password) => {
       );
     }
 
-    const tokenJwt = jwt.sign({ id: existingUser.id }, JWT_KEY, { expiresIn: '1h' });
+    const tokenJwt = jwt.sign({ id: existingUser.id }, JWT_KEY, { expiresIn: '1d' });
 
     return { message: "Login successful", user: existingUser, token: tokenJwt };
   } catch (error) {

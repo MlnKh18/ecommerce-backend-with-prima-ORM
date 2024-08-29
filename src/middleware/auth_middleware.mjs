@@ -6,10 +6,10 @@ import prisma from "../db/prisma.mjs";
 export const authMiddleware = async (request, response, next) => {
   // Ambil token dari cookies
   const token = request.cookies.auth_token;
-  console.info(token)
-
   if (!token) {
-    return response.status(401).json({ message: "Access denied. No token provided." });
+    return response
+      .status(401)
+      .json({ message: "Access denied. No token provided." });
   }
 
   try {
@@ -24,7 +24,9 @@ export const authMiddleware = async (request, response, next) => {
     });
 
     if (!findUser) {
-      return response.status(401).json({ message: "Access denied. User not found." });
+      return response
+        .status(401)
+        .json({ message: "Access denied. User not found." });
     }
 
     // Tambahkan informasi pengguna ke objek request
@@ -32,7 +34,7 @@ export const authMiddleware = async (request, response, next) => {
     next(); // Lanjutkan ke middleware berikutnya atau handler route
   } catch (error) {
     // Log error di server (jangan log token di lingkungan produksi)
-    console.error('Token verification error:', error.message);
+    console.error("Token verification error:", error.message);
     return response.status(401).json({ message: "Invalid token." });
   }
 };
